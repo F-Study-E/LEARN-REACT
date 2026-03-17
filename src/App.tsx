@@ -9,31 +9,34 @@ interface StudyRoute {
   path: string;
   Component: React.ComponentType;
   chapter: string;
+  example: string;
   user: string;
 }
 
 // eager: true는 빌드 시점에 모든 모듈을 즉시 가져옴
+// path 예시: "./challenges/01-chapter/01-example/user/index.tsx"
 const modules = import.meta.glob<ModuleType>("./challenges/**/*/index.tsx", {
   eager: true,
 });
 
 const routes: StudyRoute[] = Object.keys(modules).map((path) => {
-  // path 예시: "./challenges/01-chapter/user/index.tsx"
   const pathParts = path.split("/");
   const chapter = pathParts[2];
-  const user = pathParts[3];
+  const example = pathParts[3];
+  const user = pathParts[4];
 
   return {
-    path: `/${chapter}/${user}`,
+    path: `/${chapter}/${example}/${user}`,
     Component: modules[path].default,
     chapter,
+    example,
     user,
   };
 });
 
 // 4. 스타일 객체 정의 (선택 사항, 가독성을 위해)
 const navStyle: React.CSSProperties = {
-  width: "280px",
+  width: "250px",
   borderRight: "1px solid #e1e1e1",
   padding: "1.5rem",
   height: "100vh",
@@ -69,6 +72,9 @@ function App() {
               >
                 <div style={{ fontWeight: "bold", color: "#666" }}>
                   {route.chapter}
+                </div>
+                <div style={{ marginLeft: "8px", color: "#888" }}>
+                  {route.example}
                 </div>
                 <div style={{ marginLeft: "8px" }}>👤 {route.user}</div>
               </Link>
