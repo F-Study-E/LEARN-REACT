@@ -36,7 +36,7 @@ const routes: StudyRoute[] = Object.keys(modules).map((path) => {
 
 // 4. 스타일 객체 정의 (선택 사항, 가독성을 위해)
 const navStyle: React.CSSProperties = {
-  width: "280px",
+  width: "250px",
   borderRight: "1px solid #e1e1e1",
   padding: "1.5rem",
   height: "100vh",
