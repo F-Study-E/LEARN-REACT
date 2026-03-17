@@ -9,7 +9,7 @@
 
 import { useRef, useState } from 'react';
 
-export default function Chat() {
+export default function Chat1() {
   const [text, setText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const timeoutID = useRef<number | null>(null);

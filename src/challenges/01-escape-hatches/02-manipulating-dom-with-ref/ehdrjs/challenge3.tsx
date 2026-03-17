@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react';
-import styles from './c3.module.css';
 import { flushSync } from 'react-dom';
+
 export default function CatFriends() {
   const [index, setIndex] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
   return (
     <>
-      <nav className={styles.nav}>
+      <nav>
         <button onClick={() => {
           // flushSync 안에서 state를 업데이트하면,
           // React가 이 업데이트를 즉시 동기적으로 처리하고 DOM까지 반영한 뒤에
@@ -27,16 +27,18 @@ export default function CatFriends() {
         </button>
       </nav>
       <div>
-        <ul className={styles.list}>
+        <ul style={{
+          display: 'flex',
+          width: '900px',
+          overflow: 'hidden',
+        }}>
           {catList.map((cat, i) => (
             <li key={cat.id}>
               <img
                 ref={index === i ? imgRef : null}
-                className={
-                  index === i ?
-                    styles.active :
-                    ''
-                }
+                style={{
+                  border: index === i ? '4px solid red' : 'none',
+                }}
                 src={cat.imageUrl}
                 alt={'Cat #' + cat.id}
               />
