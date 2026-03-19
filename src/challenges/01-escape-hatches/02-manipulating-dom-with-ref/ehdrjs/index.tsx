@@ -2,7 +2,7 @@ import "github-markdown-css/github-markdown.css";
 import "highlight.js/styles/github.css";
 import VideoPlayer from "./challenge1";
 import Page from "./challenge2";
-import CatFriends from "./challenge3";
+import { CatFriendsFlushSync, CatFriendsLayoutEffect } from "./challenge3";
 import Page2 from "./challenge4";
 
 export default function Ehdrjs() {
@@ -13,9 +13,11 @@ export default function Ehdrjs() {
       <h4>challenge2</h4>
       <Page />
       <h4>challenge3</h4>
-      <CatFriends />
+      <CatFriendsFlushSync />
+
+      <CatFriendsLayoutEffect />
       <h4>challenge4</h4>
       <Page2 />
-    </div >
+    </div>
   );
 }

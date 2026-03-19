@@ -1,17 +1,29 @@
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-export default function CatFriends() {
+/**
+ * flushSync 버전: 이벤트 핸들러 안에서 즉시 DOM 반영 후 scrollIntoView
+ *
+ * [실행 흐름]
+ * 1. onClick → flushSync 콜백 실행
+ * 2. setIndex 호출 → React가 동기적으로 리렌더 + 커밋 + DOM 반영 (강제 flush)
+ * 3. flushSync 반환 후 imgRef.current가 새 DOM을 가리킴
+ * 4. scrollIntoView 실행
+ *
+ * [주의사항]
+ * - React 배칭을 깨고 메인 스레드를 블로킹함
+ * - 컴포넌트 트리가 크면 클릭 시 UI 지연/멈춤 느낌 가능
+ * - DOM 측정·변경이 필요할 땐 useLayoutEffect 사용을 권장
+ *
+ * @see https://ko.react.dev/reference/react-dom/flushSync
+ */
+export function CatFriendsFlushSync() {
   const [index, setIndex] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
   return (
     <>
       <nav>
         <button onClick={() => {
-          // flushSync 안에서 state를 업데이트하면,
-          // React가 이 업데이트를 즉시 동기적으로 처리하고 DOM까지 반영한 뒤에
-          // 아래의 scrollIntoView가 실행되도록 보장해 준다.
-          // (즉, "index 변경 → 새 이미지에 ref 연결 → 그 DOM 기준으로 스크롤" 순서를 강제)
           flushSync(() => {
             if (index < catList.length - 1) {
               setIndex(index + 1);
@@ -26,29 +38,74 @@ export default function CatFriends() {
           Next
         </button>
       </nav>
-      <div>
-        <ul style={{
-          display: 'flex',
-          width: '900px',
-          overflow: 'hidden',
-        }}>
-          {catList.map((cat, i) => (
-            <li key={cat.id}>
-              <img
-                ref={index === i ? imgRef : null}
-                style={{
-                  border: index === i ? '4px solid red' : 'none',
-                }}
-                src={cat.imageUrl}
-                alt={'Cat #' + cat.id}
-              />
-            </li>
-          ))}
-        </ul>
-      </div>
+      <CatList index={index} imgRef={imgRef} />
     </>
   );
 }
+
+/**
+ * useLayoutEffect 버전 (권장): React의 정상 커밋 사이클 안에서 scrollIntoView 실행
+ *
+ * [실행 흐름]
+ * 1. onClick → setIndex 호출
+ * 2. React 리렌더 → DOM 커밋 (paint 전)
+ * 3. useLayoutEffect 실행 → scrollIntoView
+ * 4. 브라우저 paint
+ */
+export function CatFriendsLayoutEffect() {
+  const [index, setIndex] = useState(0);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useLayoutEffect(() => {
+    imgRef.current?.scrollIntoView({
+      behavior: 'smooth', block: 'nearest', inline: 'center'
+    });
+  }, [index]);
+
+  return (
+    <>
+      <nav>
+        <button onClick={() => {
+          if (index < catList.length - 1) {
+            setIndex(index + 1);
+          } else {
+            setIndex(0);
+          }
+        }}>
+          Next
+        </button>
+      </nav>
+      <CatList index={index} imgRef={imgRef} />
+    </>
+  );
+}
+
+function CatList({ index, imgRef }: { index: number; imgRef: React.RefObject<HTMLImageElement | null> }) {
+  return (
+    <div>
+      <ul style={{
+        display: 'flex',
+        width: '900px',
+        overflow: 'hidden',
+      }}>
+        {catList.map((cat, i) => (
+          <li key={cat.id}>
+            <img
+              ref={index === i ? imgRef : null}
+              style={{
+                border: index === i ? '4px solid red' : 'none',
+              }}
+              src={cat.imageUrl}
+              alt={'Cat #' + cat.id}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default CatFriendsLayoutEffect;
 
 const catCount = 10;
 const catList = new Array(catCount);
