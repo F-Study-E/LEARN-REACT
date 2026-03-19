@@ -1,4 +1,4 @@
-# ⚛️ React Docs Challenge Study
+# ⚛️ React 스터디
 
 리액트 공식 문서를 보며 기초 복습하기
 
@@ -83,7 +83,7 @@ PR 제출 시 아래 템플릿을 사용하여 본인의 코드 의도를 설명
 
 | 주차 | 챕터명 | 주요 개념 | 상태 |
 | --- | --- | --- | --- |
-| **Week 1** | **Escape Hatches** | Ref로 값 참조하기,Ref로 DOM 조작하기 챌린지 풀기 + useRef 파보기 | ⬜ 대기 |
-
+| **Week 1** | **Escape Hatches** | Ref로 값 참조하기,Ref로 DOM 조작하기 챌린지 풀기 + useRef 파보기 | ✅ |
+| **Week 2** | useEffect 시리즈 | useEffect, useEffectEvent, useLayoutEffect | 🏃 진행중 |
 ---
 
