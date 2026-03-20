@@ -48,7 +48,6 @@ const mainStyle: React.CSSProperties = {
   flex: 1,
   padding: "2rem",
   height: "100vh",
-  overflowY: "auto",
 };
 
 function App() {
