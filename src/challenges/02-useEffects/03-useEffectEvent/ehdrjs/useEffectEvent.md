@@ -193,6 +193,58 @@ useEffect(() => {
 즉, 린트 규칙을 억지로 무시하지 않고,  
 의도(등록 수명 vs 최신 값 접근)를 코드로 명확히 분리할 수 있다.
 
+### 동작 원리: 어떻게 의존성 없이 최신값을 읽을 수 있을까?
+
+내부 구현을 개념 코드로 표현하면:
+
+```tsx
+function useEffectEvent(fn) {
+  const ref = useRef(fn);
+
+  // 매 렌더마다, 화면 그리기 전에 동기적으로 최신 fn 저장
+  useLayoutEffect(() => {
+    ref.current = fn;
+  });
+
+  // 참조값은 절대 바뀌지 않는 래퍼 반환
+  return useCallback((...args) => {
+    return ref.current(...args); // 호출 시 최신 fn 실행
+  }, []);
+}
+```
+
+두 가지가 동시에 성립한다.
+
+|           | 방법                         | 효과                                          |
+| --------- | ---------------------------- | --------------------------------------------- |
+| 함수 참조 | `useCallback(..., [])`       | 절대 바뀌지 않음 → useEffect 재실행 없음      |
+| 함수 내용 | `useLayoutEffect`로 ref 갱신 | 이벤트 발생 전에 항상 최신 로직으로 교체 완료 |
+
+이게 가능한 이유는 **실행 순서 보장** 덕분이다.
+
+```
+① 렌더링          컴포넌트 함수 실행 → 최신 state/props를 잡은 새 fn 클로저 생성
+② DOM 커밋        React가 변경사항을 실제 DOM에 반영
+③ useLayoutEffect 동기 실행 (화면 그리기 전) → ref.current = 최신 fn 으로 갱신
+④ 브라우저 paint  화면 그리기
+⑤ useEffect 실행  (화면 그린 후, 비동기)
+                    └─ 마운트 시: addEventListener로 래퍼 함수 등록
+                    └─ 리렌더 시: 래퍼 참조 동일 → deps 변화 없음 → 재실행 안 됨
+--- 이후 사용자 상호작용 ---
+⑥ 이벤트 발생     등록된 래퍼 함수 호출 → ref.current() 실행
+                    이 시점의 ref.current는 ③에서 이미 최신값으로 갱신된 상태 ✅
+```
+
+`useLayoutEffect`(③)는 항상 `useEffect`(⑤)와 이벤트(⑥)보다 먼저 완료된다.  
+그래서 래퍼 함수가 호출될 때 `ref.current`는 반드시 최신 fn을 가리키고 있다.
+
+쉽게 말하면, **번호판(참조값)은 그대로인데 차 안의 짐(실제 로직)은 매 렌더마다 교체**되는 구조다.  
+useEffect는 번호판만 비교하므로 재실행하지 않고, 실제 로직은 항상 최신 상태다.
+
+참고: https://handhand.tistory.com/entry/understanding-react-useeffectevent
+
+---
+
 ### 주의할 점
 
 - `useEffectEvent`는 **Effect 내부에서 호출하는 용도**로 사용한다.
