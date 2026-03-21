@@ -1,0 +1,21 @@
+@import "github-markdown-css/github-markdown.css" (prefers-color-scheme: light);
+@import "github-markdown-css/github-markdown-dark.css"
+  (prefers-color-scheme: dark);
+@import "highlight.js/styles/github.css" (prefers-color-scheme: light);
+@import "highlight.js/styles/atom-one-dark.css" (prefers-color-scheme: dark);
+
+.md-renderer-card {
+  margin: 0.75rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fff;
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  .md-renderer-card {
+    border-color: #30363d;
+    background: #0d1117;
+  }
+}
