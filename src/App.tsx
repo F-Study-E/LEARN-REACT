@@ -13,6 +13,11 @@ interface StudyRoute {
   user: string;
 }
 
+type NavTree = Record<
+  string,
+  Record<string, Array<{ user: string; path: string }>>
+>;
+
 // eager: true는 빌드 시점에 모든 모듈을 즉시 가져옴
 // path 예시: "./challenges/01-chapter/01-example/user/index.tsx"
 const modules = import.meta.glob<ModuleType>("./challenges/**/*/index.tsx", {
@@ -33,6 +38,21 @@ const routes: StudyRoute[] = Object.keys(modules).map((path) => {
     user,
   };
 });
+
+const sortedRoutes = [...routes].sort((a, b) => {
+  const c = a.chapter.localeCompare(b.chapter);
+  if (c !== 0) return c;
+  const e = a.example.localeCompare(b.example);
+  if (e !== 0) return e;
+  return a.user.localeCompare(b.user);
+});
+
+const navTree: NavTree = sortedRoutes.reduce<NavTree>((acc, r) => {
+  acc[r.chapter] ??= {};
+  acc[r.chapter][r.example] ??= [];
+  acc[r.chapter][r.example].push({ user: r.user, path: r.path });
+  return acc;
+}, {});
 
 // 4. 스타일 객체 정의 (선택 사항, 가독성을 위해)
 const navStyle: React.CSSProperties = {
@@ -59,24 +79,50 @@ function App() {
             ⚛️ React Docs Study
           </h2>
           {routes.length === 0 && <p>챌린지를 찾을 수 없습니다.</p>}
-          {routes.map((route) => (
-            <div key={route.path} style={{ marginBottom: "12px" }}>
-              <Link
-                to={route.path}
+          {Object.entries(navTree).map(([chapter, examples]) => (
+            <div key={chapter} style={{ marginBottom: "16px" }}>
+              <div
                 style={{
-                  textDecoration: "none",
-                  color: "#333",
-                  fontSize: "0.9rem",
+                  fontWeight: 800,
+                  color: "#444",
+                  fontSize: "0.95rem",
+                  marginBottom: "8px",
                 }}
               >
-                <div style={{ fontWeight: "bold", color: "#666" }}>
-                  {route.chapter}
+                {chapter}
+              </div>
+
+              {Object.entries(examples).map(([example, users]) => (
+                <div key={`${chapter}/${example}`} style={{ marginBottom: "10px" }}>
+                  <div
+                    style={{
+                      marginLeft: "8px",
+                      color: "#666",
+                      fontWeight: 700,
+                      fontSize: "0.9rem",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    {example}
+                  </div>
+
+                  <div style={{ marginLeft: "16px", display: "grid", gap: "6px" }}>
+                    {users.map(({ user, path }) => (
+                      <Link
+                        key={path}
+                        to={path}
+                        style={{
+                          textDecoration: "none",
+                          color: "#333",
+                          fontSize: "0.88rem",
+                        }}
+                      >
+                        👤 {user}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-                <div style={{ marginLeft: "8px", color: "#888" }}>
-                  {route.example}
-                </div>
-                <div style={{ marginLeft: "8px" }}>👤 {route.user}</div>
-              </Link>
+              ))}
             </div>
           ))}
         </nav>
