@@ -70,11 +70,6 @@ PR 제출 시 아래 템플릿을 사용하여 본인의 코드 의도를 설명
 ## 🧐 고민했던 부분
 - 구현하면서 어려웠던 점이나 궁금했던 점
 
-## ✅ 셀프 체크리스트
-- [ ] 공식 문서의 요구사항을 모두 충족했는가?
-- [ ] 불필요한 State 사용을 지양했는가?
-- [ ] 컴포넌트 분리가 적절한가?
-
 ```
 
 ---
@@ -84,6 +79,11 @@ PR 제출 시 아래 템플릿을 사용하여 본인의 코드 의도를 설명
 | 주차 | 챕터명 | 주요 개념 | 상태 |
 | --- | --- | --- | --- |
 | **Week 1** | **Escape Hatches** | Ref로 값 참조하기,Ref로 DOM 조작하기 챌린지 풀기 + useRef 파보기 | ✅ |
-| **Week 2** | useEffect 시리즈 | useEffect, useEffectEvent, useLayoutEffect | 🏃 진행중 |
+| **Week 2** | useEffect 시리즈 | useEffect, useEffectEvent, useLayoutEffect | ✅ |
+| **Week 3** | Concurrent 시리즈 | Suspense, useTransition, useOptimistic | 🏃 진행중 |
+| **Week 4** | useState 시리즈 | useState, useActionState | 🧎‍➡️ |
+| **Week 5** |  React Compiler | Why, 동작 원리, 기능(좋은점), 어떻게 확인할까? | 🧎‍➡️ |
+
+
 ---
 
