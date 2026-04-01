@@ -6,6 +6,7 @@ export default function Example2() {
   useLayoutEffect(() => {
     // 무거운 동기 작업을 넣으면 paint가 늦어진다.
     const start = performance.now();
+
     while (performance.now() - start < 300) {
       // busy wait (예시용)
     }
