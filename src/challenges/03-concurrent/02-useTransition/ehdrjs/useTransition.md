@@ -404,3 +404,71 @@ export default function App() {
 Suspense = 초기 로딩 담당
 
 startTransition = 이후 전환 시 깜빡임 방지
+
+#### 어떻게 안 보여주는 걸까?
+
+[Case 1] startTransition 없을 때
+
+```
+// 그냥 setState
+setPromise(createPromise(3000)); // DefaultLane or SyncLane
+
+컴포넌트가 Promise throw
+    ↓
+throwException() 호출
+    ↓
+이 렌더의 Lane = SyncLane / DefaultLane
+    ↓
+"전환이 아님 → 기존 화면 버리고 fallback 커밋"
+    ↓
+<div>로딩 중... (Suspense fallback)</div>  ← 즉시 표시
+```
+
+[Case 2] startTransition 있을 때
+
+
+```
+startTransition(() => {
+  setPromise(createPromise(3000)); // TransitionLane
+});
+
+컴포넌트가 Promise throw
+    ↓
+throwException() 호출
+    ↓
+이 렌더의 Lane = TransitionLane ← 여기서 분기!
+    ↓
+"전환이다 → 현재 커밋된 트리(기존 화면) 그대로 유지"
+    ↓
+새 렌더 결과를 버림 (discard)
+isPending = true 로 설정
+    ↓
+Promise.then(() => retry) 등록
+    ↓
+Promise resolve → 렌더 재시도 → 성공 → 커밋
+
+```
+
+React Fiber 소스 코드 (ReactFiberWorkLoop) 에서 체크가 일어남
+
+```tsx
+// 단순화한 React 내부 로직
+function throwException(fiber, thrownValue) {
+  if (thrownValue instanceof Promise) {
+    const isTransition = includesOnlyTransitions(fiber.lanes);
+    //                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    //                   이 Lane이 전부 TransitionLane인가?
+
+    if (isTransition) {
+      // 기존 화면 유지, isPending=true, retry 등록
+      markSuspenseBoundaryShouldCapture(/* retryable */);
+    } else {
+      // 즉시 fallback 보여줌
+      markSuspenseBoundaryShouldCapture(/* show fallback */);
+    }
+  }
+}
+```
+
+React는 suspend 시 "이 업데이트가 Transition이냐?" 를 Lane으로 판단한다.
+Transition이면 기존 커밋된 화면을 보존하고, 아니면 fallback으로 교체한다.

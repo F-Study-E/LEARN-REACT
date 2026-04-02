@@ -50,6 +50,7 @@ lazy:  [앱 시작] → 핵심 번들만 로드
 <Suspense fallback={<Skeleton />}>
   <UserProfile userId={1} />
 </Suspense>
+```
 
 ---
 
@@ -119,7 +120,7 @@ catch 만날 때까지 catch 없으면 무조건 통과해버림
       <C>           ← throw Promise 발생!
 ```
 
-<C>에서 throw promise → <B> 통과 → <A> 통과 → <Suspense> catch!
+`<C>`에서 throw promise → `<B>` 통과 → `<A>` 통과 → `<Suspense>` catch!
 
 Suspense는 결국 "Promise를 잡는 catch 블록"이다.
 
@@ -169,8 +170,6 @@ function Albums() {
 <Suspense fallback={<BigSpinner />}> // Suspense 작동 X
   <Albums />
 </Suspense>
-  
-
 ```
 >  useEffect는 렌더링이 끝난 뒤 실행되기 때문에, 렌더링 중 Promise throw를 감지하는 Suspense 입장에서는 "이미 지나간 일"이라 잡을 수 없음!!
 
