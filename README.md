@@ -81,7 +81,7 @@ PR 제출 시 아래 템플릿을 사용하여 본인의 코드 의도를 설명
 | **Week 1** | **Escape Hatches** | Ref로 값 참조하기,Ref로 DOM 조작하기 챌린지 풀기 + useRef 파보기 | ✅ |
 | **Week 2** | useEffect 시리즈 | useEffect, useEffectEvent, useLayoutEffect | ✅ |
 | **Week 3** | Concurrent 시리즈 | Suspense, useTransition, useOptimistic | ✅ |
-| **Week 4** | useState 시리즈 | useState, useContext | 🏃 진행중 |
+| **Week 4** | State 시리즈 | useState, useContext | 🏃 진행중 |
 | **Week 5** |  React Compiler | Why, 동작 원리, 기능(좋은점), 어떻게 확인할까? | 🧎‍➡️ |
 
 
