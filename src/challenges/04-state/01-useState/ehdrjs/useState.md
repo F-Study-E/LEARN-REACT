@@ -215,19 +215,99 @@ setTodos(prev => prev.filter(t => t.id !== id));
 
 </details>
 
-### Object.is 비교와 Bailout 최적화
+마크다운으로 바로 추가할 수 있게 작성해줄게.
 
-React는 `Object.is(prevState, nextState)`로 변경 여부를 판단한다. 같은 값이면 리렌더를 건너뛴다 (Bailout).
+---
 
-```tsx
-setCount(0); // count가 이미 0이면 → 리렌더 스킵
-```
+## Object.is Bailout
 
-객체·배열은 **참조 비교**이므로 내용이 같아도 새 객체면 리렌더가 발생한다:
+`setState`를 호출해도 새 값이 현재 값과 같으면 React는 리렌더를 **건너뛴다**. 비교 기준은 `Object.is`다.
 
 ```tsx
-setUser({ name: "kim" }); // 매번 새 객체 → 항상 리렌더
+const [count, setCount] = useState(0);
+
+setCount(0); // Object.is(0, 0) === true → 리렌더 스킵
 ```
+
+내부적으로 Fiber가 업데이트를 처리할 때 이전 값과 새 값을 비교해서, 동일하면 자식 컴포넌트 재실행 없이 빠져나온다. 이걸 **bailout**이라고 부른다.
+
+```
+setState(newValue) 호출
+        │
+        ▼
+   Object.is(현재값, newValue)
+        │
+   ┌────┴────┐
+   │ true    │ false
+   │         │
+   ▼         ▼
+  스킵    Queue에 추가 → 리렌더
+```
+
+단, 객체·배열은 참조 비교이므로 주의해야 한다:
+
+```tsx
+const [user, setUser] = useState({ name: "kim" });
+
+// ❌ 새 객체이므로 내용이 같아도 리렌더 발생
+setUser({ name: "kim" }); // Object.is({...}, {...}) === false
+
+// ✅ 값이 안 바뀌었으면 아예 호출하지 않거나, 같은 참조를 넘긴다
+setUser(prev => {
+  if (prev.name === newName) return prev; // 같으면 스킵
+  return { ...prev, name: newName };      // 다를 때만 새 객체
+});
+```
+
+> `Object.is`는 `===`와 거의 동일하지만, `NaN === NaN`이 `false`인 반면 `Object.is(NaN, NaN)`은 `true`다. 또한 `Object.is(+0, -0)`은 `false`다.
+
+---
+
+## key를 이용한 State 리셋
+
+React는 리렌더 시 트리 구조가 동일하면 기존 컴포넌트를 재사용한다. 새로 만드는 게 아니라 props만 교체하고, state는 그대로 유지된다.
+
+```tsx
+// userId가 바뀌어도 Profile의 Fiber가 재사용되므로 내부 state가 유지됨
+function App({ userId }) {
+  return <Profile userId={userId} />;
+}
+
+function Profile({ userId }) {
+  const [input, setInput] = useState(""); // userId가 바뀌어도 input이 초기화 안 됨!
+}
+```
+
+`key`를 지정하면 React가 기존 Fiber를 **파괴하고 새로 생성**한다. state가 완전히 초기화된다.
+
+```tsx
+// ✅ userId가 바뀌면 Fiber Node 자체가 새로 만들어짐
+function App({ userId }) {
+  return <Profile key={userId} userId={userId} />;
+}
+```
+
+Fiber 관점에서 보면:
+
+```
+userId: 1 → 2로 변경
+
+key 없을 때:
+  기존 Fiber Node 재사용 → props만 업데이트 → state 유지
+
+key={userId}일 때:
+  key="1" Fiber 삭제 (unmount)
+  key="2" Fiber 새로 생성 (mount) → state 초기화
+```
+
+이 패턴은 폼 초기화, 탭 전환, 채팅방 전환 등에서 자주 쓰인다:
+
+```tsx
+// 채팅방이 바뀌면 입력창·스크롤 위치 등 모든 state를 리셋
+<ChatRoom key={roomId} roomId={roomId} />
+```
+
+---
 
 ### 불변성 (Immutability)
 
@@ -251,7 +331,7 @@ setUser(prev => ({ ...prev, name: "lee" }));
 
 ```tsx
 // ❌ createTodos()가 매 렌더마다 실행됨 (결과는 버려지지만 연산 비용 발생)
-const [todos, setTodos] = useState(createTodos());
+const [todos, setTodos] = useState(createTodos()); // createTodos() 함수가 실행되지만 값은 저장되지 않음
 
 // ✅ 초기화 함수: 최초 1회만 실행
 const [todos, setTodos] = useState(() => createTodos());

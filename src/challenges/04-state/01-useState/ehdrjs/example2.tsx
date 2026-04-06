@@ -1,35 +1,25 @@
 import { useState } from "react";
 
 export default function Example2() {
-  const [count, setCount] = useState(0);
+  const [userId, setUserId] = useState(1);
+  return (
+    <>
+      <h2>첫번째: key 없음, 두번째: key=userId</h2>
+      <button onClick={() => setUserId(1)}>유저 1</button>
+      <button onClick={() => setUserId(2)}>유저 2</button>
+      <Profile userId={userId} />
+      <Profile key={userId} userId={userId} />
+    </>
+  );
+}
 
-  console.log("count: ", count);
+function Profile({ userId }: { userId: number }) {
+  const [input, setInput] = useState("");
 
   return (
     <div>
-      <h3>값 전달 vs 업데이터 함수</h3>
-      <p>
-        count: <strong>{count}</strong>
-      </p>
-      <button
-        onClick={() => {
-          setCount(count + 1);
-          setCount(count + 1);
-          setCount(count + 1);
-        }}
-      >
-        ❌ count+1 × 3
-      </button>{" "}
-      <button
-        onClick={() => {
-          setCount((p) => p + 1);
-          setCount((p) => p + 1);
-          setCount((p) => p + 1);
-        }}
-      >
-        ✅ prev+1 × 3
-      </button>{" "}
-      <button onClick={() => setCount(0)}>리셋</button>
+      <h2>유저 {userId}의 프로필</h2>
+      <input value={input} onChange={(e) => setInput(e.target.value)} />
     </div>
   );
 }
